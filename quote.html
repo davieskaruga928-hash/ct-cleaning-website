@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Request a Quote — CT Cleaning Service</title>
+<meta name="description" content="Request a cleaning quote from CT Cleaning Service, Nairobi.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a href="index.html" class="logo">CT <span>Cleaning Service</span></a>
+    <nav class="main-nav">
+      <a href="services.html">Services</a>
+      <a href="about.html">About</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <a href="quote.html" class="btn btn-primary header-cta active">Request a quote</a>
+  </div>
+</header>
+
+<main>
+
+  <section class="page-hero">
+    <div class="wrap">
+      <p class="hero-kicker">Request a quote</p>
+      <h1>Tell us what you need cleaned</h1>
+      <p class="hero-sub">Fill in the details below and we'll get back to you with a clear quote. This form doesn't submit anywhere yet — it's a preview of what the live version will look like.</p>
+    </div>
+  </section>
+
+  <section class="quote-section">
+    <div class="wrap quote-wrap">
+      <form id="quote-form" class="quote-form" novalidate>
+
+        <div class="form-row">
+          <label for="name">Full name</label>
+          <input type="text" id="name" name="name" required>
+        </div>
+
+        <div class="form-row two-col">
+          <div>
+            <label for="phone">Phone number</label>
+            <input type="tel" id="phone" name="phone" required>
+          </div>
+          <div>
+            <label for="email">Email (optional)</label>
+            <input type="email" id="email" name="email">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label for="service-type">Type of cleaning needed</label>
+          <select id="service-type" name="service_type" required>
+            <option value="" disabled selected>Select one</option>
+            <option value="institutional">Institutional / large-scale</option>
+            <option value="office">Office</option>
+            <option value="church-event">Church / event</option>
+            <option value="home">Home</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <label for="org-name">Organization / institution name (if applicable)</label>
+          <input type="text" id="org-name" name="org_name">
+        </div>
+
+        <div class="form-row two-col">
+          <div>
+            <label for="location">Location</label>
+            <input type="text" id="location" name="location" placeholder="e.g. Westlands, Nairobi" required>
+          </div>
+          <div>
+            <label for="date-needed">Date needed</label>
+            <input type="date" id="date-needed" name="date_needed">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label for="notes">Additional details</label>
+          <textarea id="notes" name="notes" rows="4" placeholder="Size of space, frequency needed, anything else we should know"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-large">Submit request</button>
+      </form>
+
+      <div id="quote-success" class="quote-success" hidden>
+        <h2>Thanks — request received</h2>
+        <p>This is a preview confirmation. Once the backend is connected, this is where your request will be saved and you'll hear back from us directly.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <div>
+      <p class="footer-logo">CT <span>Cleaning Service</span></p>
+      <p>Nairobi, Kenya</p>
+    </div>
+    <div>
+      <p class="footer-heading">Contact</p>
+      <p>Phone: [placeholder]</p>
+      <p>Email: [placeholder]</p>
+    </div>
+    <div>
+      <p class="footer-heading">Site</p>
+      <p><a href="services.html">Services</a></p>
+      <p><a href="about.html">About</a></p>
+      <p><a href="contact.html">Contact</a></p>
+    </div>
+  </div>
+  <p class="footer-copy">&copy; <span id="year"></span> CT Cleaning Service. All rights reserved.</p>
+</footer>
+
+<script>
+document.getElementById('year').textContent = new Date().getFullYear();
+
+const form = document.getElementById('quote-form');
+const success = document.getElementById('quote-success');
+
+form.addEventListener('submit', function (e) {
+  e.preventDefault();
+  // No backend yet — this just previews the confirmation state.
+  // Phase 2 will POST this data to the FastAPI backend instead.
+  form.hidden = true;
+  success.hidden = false;
+});
+</script>
+</body>
+</html>
