@@ -30,7 +30,7 @@
     <div class="wrap">
       <p class="hero-kicker">Request a quote</p>
       <h1>Tell us what you need cleaned</h1>
-      <p class="hero-sub">Fill in the details below and we'll get back to you with a clear quote. This form doesn't submit anywhere yet — it's a preview of what the live version will look like.</p>
+      <p class="hero-sub">Fill in the details below and we'll get back to you with a clear quote.</p>
     </div>
   </section>
 
@@ -92,7 +92,11 @@
 
       <div id="quote-success" class="quote-success" hidden>
         <h2>Thanks — request received</h2>
-        <p>This is a preview confirmation. Once the backend is connected, this is where your request will be saved and you'll hear back from us directly.</p>
+        <p>We've got your details and will be in touch shortly.</p>
+      </div>
+
+      <div id="quote-error" class="quote-error" hidden>
+        <p>Something went wrong submitting your request. Please try again, or contact us directly.</p>
       </div>
     </div>
   </section>
@@ -125,13 +129,42 @@ document.getElementById('year').textContent = new Date().getFullYear();
 
 const form = document.getElementById('quote-form');
 const success = document.getElementById('quote-success');
+const errorBox = document.getElementById('quote-error');
 
-form.addEventListener('submit', function (e) {
+form.addEventListener('submit', async function (e) {
   e.preventDefault();
-  // No backend yet — this just previews the confirmation state.
-  // Phase 2 will POST this data to the FastAPI backend instead.
-  form.hidden = true;
-  success.hidden = false;
+
+  const payload = {
+    name: document.getElementById('name').value,
+    phone: document.getElementById('phone').value,
+    email: document.getElementById('email').value || null,
+    service_type: document.getElementById('service-type').value,
+    org_name: document.getElementById('org-name').value || null,
+    location: document.getElementById('location').value,
+    date_needed: document.getElementById('date-needed').value || null,
+    notes: document.getElementById('notes').value || null,
+  };
+
+  const submitBtn = form.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Submitting...';
+
+  try {
+    const res = await fetch('/api/quotes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) throw new Error('Request failed');
+
+    form.hidden = true;
+    success.hidden = false;
+  } catch (err) {
+    errorBox.hidden = false;
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Submit request';
+  }
 });
 </script>
 </body>

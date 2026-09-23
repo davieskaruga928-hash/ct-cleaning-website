@@ -323,6 +323,14 @@ textarea { resize: vertical; }
 }
 .quote-success h2 { margin-bottom: 10px; }
 .quote-success p { margin-bottom: 0; color: var(--text-soft); }
+.quote-error {
+  border: 1px solid #B3261E;
+  background: #FBEAEA;
+  color: #7A1E17;
+  padding: 16px 20px;
+  margin-top: 16px;
+}
+.quote-error p { margin-bottom: 0; }
 
 @media (max-width: 860px) {
   .contact-inner { grid-template-columns: 1fr 1fr; }

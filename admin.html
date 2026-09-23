@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — CT Cleaning Service</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .admin-wrap { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+  .login-box { max-width: 360px; margin: 80px auto; display: grid; gap: 14px; }
+  .login-box input { padding: 11px 13px; border: 1px solid var(--border); border-radius: var(--radius); }
+  .admin-table { width: 100%; border-collapse: collapse; margin-top: 24px; font-size: 0.92rem; }
+  .admin-table th, .admin-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .admin-table th { background: var(--alt-bg); font-weight: 600; }
+  .status-select { padding: 6px 8px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.85rem; }
+  .admin-error { color: #B3261E; font-size: 0.9rem; }
+  .table-wrap { overflow-x: auto; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a href="index.html" class="logo">CT <span>Cleaning Service</span></a>
+    <span style="font-size:0.9rem;color:var(--text-soft);">Admin</span>
+  </div>
+</header>
+
+<main class="admin-wrap">
+
+  <div id="login-view" class="login-box">
+    <h1 style="font-size:1.4rem;">Admin login</h1>
+    <input type="password" id="password-input" placeholder="Admin password" autocomplete="current-password">
+    <button class="btn btn-primary" id="login-btn">Log in</button>
+    <p id="login-error" class="admin-error" hidden>Incorrect password.</p>
+  </div>
+
+  <div id="dashboard-view" hidden>
+    <h1 style="font-size:1.4rem;">Quote requests</h1>
+    <p style="color:var(--text-soft);">Newest first. Update status as you follow up on each lead.</p>
+    <div class="table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Name</th>
+            <th>Contact</th>
+            <th>Type</th>
+            <th>Org</th>
+            <th>Location</th>
+            <th>Date needed</th>
+            <th>Notes</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="quotes-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const loginView = document.getElementById('login-view');
+const dashboardView = document.getElementById('dashboard-view');
+const passwordInput = document.getElementById('password-input');
+const loginBtn = document.getElementById('login-btn');
+const loginError = document.getElementById('login-error');
+const tbody = document.getElementById('quotes-tbody');
+
+function getStoredPassword() {
+  return sessionStorage.getItem('admin_password') || '';
+}
+
+async function loadQuotes() {
+  const password = getStoredPassword();
+  const res = await fetch('/api/quotes', {
+    headers: { 'X-Admin-Password': password },
+  });
+
+  if (res.status === 401) {
+    sessionStorage.removeItem('admin_password');
+    loginView.hidden = false;
+    dashboardView.hidden = true;
+    loginError.hidden = false;
+    return;
+  }
+
+  const data = await res.json();
+  renderQuotes(data);
+  loginView.hidden = true;
+  dashboardView.hidden = false;
+}
+
+function renderQuotes(quotes) {
+  tbody.innerHTML = '';
+  quotes.forEach(function (q) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${new Date(q.created_at).toLocaleDateString()}</td>
+      <td>${q.name}</td>
+      <td>${q.phone}${q.email ? '<br>' + q.email : ''}</td>
+      <td>${q.service_type}</td>
+      <td>${q.org_name || '—'}</td>
+      <td>${q.location}</td>
+      <td>${q.date_needed || '—'}</td>
+      <td>${q.notes || '—'}</td>
+      <td></td>
+    `;
+    const statusTd = tr.lastElementChild;
+    const select = document.createElement('select');
+    select.className = 'status-select';
+    ['new', 'contacted', 'won', 'lost'].forEach(function (s) {
+      const opt = document.createElement('option');
+      opt.value = s;
+      opt.textContent = s;
+      if (s === q.status) opt.selected = true;
+      select.appendChild(opt);
+    });
+    select.addEventListener('change', function () {
+      updateStatus(q.id, select.value);
+    });
+    statusTd.appendChild(select);
+    tbody.appendChild(tr);
+  });
+}
+
+async function updateStatus(id, status) {
+  const password = getStoredPassword();
+  await fetch('/api/quotes/' + id, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Admin-Password': password,
+    },
+    body: JSON.stringify({ status: status }),
+  });
+}
+
+loginBtn.addEventListener('click', function () {
+  sessionStorage.setItem('admin_password', passwordInput.value);
+  loginError.hidden = true;
+  loadQuotes();
+});
+
+passwordInput.addEventListener('keydown', function (e) {
+  if (e.key === 'Enter') loginBtn.click();
+});
+
+// If a password is already stored for this session, try loading right away.
+if (getStoredPassword()) {
+  loadQuotes();
+}
+</script>
+</body>
+</html>
