@@ -18,6 +18,14 @@ COMPANY_ADDRESS = "[Address placeholder], Nairobi, Kenya"
 COMPANY_PHONE = "[Phone placeholder]"
 COMPANY_EMAIL = "[Email placeholder]"
 
+# Placeholder payment details — update once real account details are available.
+BANK_NAME = "[Bank name placeholder]"
+BANK_ACCOUNT_NAME = "[Account name placeholder]"
+BANK_ACCOUNT_NUMBER = "[Account number placeholder]"
+BANK_BRANCH = "[Branch placeholder]"
+MPESA_PAYBILL = "[Paybill number placeholder]"
+MPESA_ACCOUNT = "[Account/Till reference placeholder]"
+
 
 def generate_quotation_pdf(quotation) -> bytes:
     buffer = io.BytesIO()
@@ -38,6 +46,8 @@ def generate_quotation_pdf(quotation) -> bytes:
     styles.add(ParagraphStyle(name="SectionLabel", fontSize=9, textColor=GREY, fontName="Helvetica-Bold", spaceAfter=4))
     styles.add(ParagraphStyle(name="Body", fontSize=10, textColor=INK, leading=14))
     styles.add(ParagraphStyle(name="NotesBody", fontSize=9, textColor=GREY, leading=13))
+    styles.add(ParagraphStyle(name="PayLabel", fontSize=9, textColor=TEAL, fontName="Helvetica-Bold", leading=14))
+    styles.add(ParagraphStyle(name="PayValue", fontSize=9.5, textColor=INK, leading=14))
 
     elements = []
 
@@ -118,7 +128,40 @@ def generate_quotation_pdf(quotation) -> bytes:
         elements.append(Paragraph(quotation.notes.replace("\n", "<br/>"), styles["NotesBody"]))
         elements.append(Spacer(1, 14))
 
-    elements.append(Spacer(1, 10))
+    # Payment details: bank and M-Pesa, side by side in a bordered block
+    elements.append(Paragraph("PAYMENT DETAILS", styles["SectionLabel"]))
+
+    def field(label, value):
+        return f'<font color="#1D8A7A"><b>{label}:</b></font> {value}'
+
+    bank_block = Paragraph(
+        "<b>Bank Transfer</b><br/>"
+        + field("Bank", BANK_NAME) + "<br/>"
+        + field("Account name", BANK_ACCOUNT_NAME) + "<br/>"
+        + field("Account no.", BANK_ACCOUNT_NUMBER) + "<br/>"
+        + field("Branch", BANK_BRANCH),
+        styles["PayValue"],
+    )
+    mpesa_block = Paragraph(
+        "<b>M-Pesa</b><br/>"
+        + field("Paybill", MPESA_PAYBILL) + "<br/>"
+        + field("Account/Reference", MPESA_ACCOUNT),
+        styles["PayValue"],
+    )
+
+    payment_table = Table([[bank_block, mpesa_block]], colWidths=[85 * mm, 85 * mm])
+    payment_table.setStyle(TableStyle([
+        ("BOX", (0, 0), (-1, -1), 0.75, colors.HexColor("#DCE1E6")),
+        ("INNERGRID", (0, 0), (-1, -1), 0.75, colors.HexColor("#DCE1E6")),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("TOPPADDING", (0, 0), (-1, -1), 10),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
+        ("LEFTPADDING", (0, 0), (-1, -1), 12),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 12),
+    ]))
+    elements.append(payment_table)
+    elements.append(Spacer(1, 18))
+
     elements.append(Paragraph(
         "Thank you for considering CT Cleaning Service. This quotation is an estimate; "
         "final pricing may be confirmed after an on-site assessment where applicable.",
