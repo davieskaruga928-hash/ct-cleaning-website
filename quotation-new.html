@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Quotation — CT Cleaning Service</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  [hidden] { display: none !important; }
+  .admin-wrap { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+  .login-box { max-width: 360px; margin: 80px auto; display: grid; gap: 14px; }
+  .login-box input { padding: 11px 13px; border: 1px solid var(--border); border-radius: var(--radius); }
+  .admin-error { color: #B3261E; font-size: 0.9rem; }
+  .top-nav { display: flex; gap: 18px; margin-bottom: 24px; font-size: 0.9rem; }
+  .top-nav a { color: var(--text-soft); }
+  .top-nav a.active { color: var(--teal-dark); font-weight: 600; }
+
+  .q-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .q-form-grid .full { grid-column: 1 / -1; }
+  .q-form-grid label { font-weight: 600; font-size: 0.85rem; display: block; margin-bottom: 4px; }
+  .q-form-grid input, .q-form-grid textarea {
+    width: 100%; padding: 9px 11px; border: 1px solid var(--border); border-radius: var(--radius); font-family: inherit; font-size: 0.92rem;
+  }
+
+  .items-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+  .items-table th { text-align: left; font-size: 0.8rem; color: var(--text-soft); padding: 6px 8px; border-bottom: 1px solid var(--border); }
+  .items-table td { padding: 6px 8px; }
+  .items-table input { width: 100%; padding: 7px 8px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.9rem; }
+  .items-table input.qty, .items-table input.price { text-align: right; }
+  .subtotal-cell { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; padding-right: 8px; }
+  .remove-btn { background: none; border: none; color: #B3261E; cursor: pointer; font-size: 1.1rem; line-height: 1; padding: 4px 8px; }
+
+  .totals-row { display: flex; justify-content: flex-end; gap: 12px; font-size: 1.05rem; padding: 10px 0; border-top: 2px solid var(--ink); margin-top: 4px; }
+  .totals-row .label { color: var(--text-soft); }
+  .totals-row .amount { font-weight: 700; color: var(--ink); }
+
+  .add-item-btn { background: var(--alt-bg); border: 1px dashed var(--border); border-radius: var(--radius); padding: 8px 14px; cursor: pointer; font-size: 0.9rem; color: var(--teal-dark); font-weight: 600; }
+
+  .saved-table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 0.9rem; }
+  .saved-table th, .saved-table td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--border); }
+  .saved-table th { background: var(--alt-bg); }
+  .pdf-link-btn { background: var(--teal); color: #fff; border: none; padding: 6px 12px; border-radius: var(--radius); cursor: pointer; font-size: 0.85rem; font-weight: 600; }
+  .save-status { font-size: 0.9rem; margin-top: 10px; }
+  .save-status.ok { color: var(--teal-dark); }
+  .save-status.err { color: #B3261E; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a href="index.html" class="logo">CT <span>Cleaning Service</span></a>
+    <span style="font-size:0.9rem;color:var(--text-soft);">Admin</span>
+  </div>
+</header>
+
+<main class="admin-wrap">
+
+  <div id="login-view" class="login-box">
+    <h1 style="font-size:1.4rem;">Admin login</h1>
+    <input type="password" id="password-input" placeholder="Admin password" autocomplete="current-password">
+    <button class="btn btn-primary" id="login-btn">Log in</button>
+    <p id="login-error" class="admin-error" hidden>Incorrect password.</p>
+  </div>
+
+  <div id="dashboard-view" hidden>
+    <nav class="top-nav">
+      <a href="admin.html">Leads</a>
+      <a href="quotation-new.html" class="active">Quotations</a>
+    </nav>
+
+    <h1 style="font-size:1.4rem;">Create a quotation</h1>
+    <p style="color:var(--text-soft);margin-bottom:20px;">Fill in the client's details and add line items — a numbered, branded PDF is generated automatically.</p>
+
+    <form id="quotation-form">
+      <div class="q-form-grid">
+        <div><label for="client-name">Client name</label><input type="text" id="client-name" required></div>
+        <div><label for="client-phone">Phone</label><input type="text" id="client-phone" required></div>
+        <div><label for="client-email">Email (optional)</label><input type="email" id="client-email"></div>
+        <div><label for="client-org">Organization (optional)</label><input type="text" id="client-org"></div>
+        <div class="full"><label for="client-location">Location</label><input type="text" id="client-location" required></div>
+        <div><label for="valid-until">Valid until (optional)</label><input type="date" id="valid-until"></div>
+      </div>
+
+      <label style="font-weight:600;font-size:0.9rem;">Line items</label>
+      <table class="items-table" id="items-table">
+        <thead>
+          <tr><th style="width:50%;">Description</th><th>Qty</th><th>Unit price (KES)</th><th>Subtotal</th><th></th></tr>
+        </thead>
+        <tbody id="items-tbody"></tbody>
+      </table>
+      <button type="button" class="add-item-btn" id="add-item-btn">+ Add line item</button>
+
+      <div class="totals-row">
+        <span class="label">Total</span>
+        <span class="amount" id="grand-total">KES 0.00</span>
+      </div>
+
+      <div class="q-form-grid" style="margin-top:16px;">
+        <div class="full"><label for="notes">Notes (optional)</label><textarea id="notes" rows="3"></textarea></div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-large">Save quotation</button>
+      <p id="save-status" class="save-status" hidden></p>
+    </form>
+
+    <h2 style="font-size:1.1rem;margin-top:44px;">Saved quotations</h2>
+    <div style="overflow-x:auto;">
+      <table class="saved-table">
+        <thead>
+          <tr><th>No.</th><th>Date</th><th>Client</th><th>Total</th><th></th></tr>
+        </thead>
+        <tbody id="saved-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const loginView = document.getElementById('login-view');
+const dashboardView = document.getElementById('dashboard-view');
+const passwordInput = document.getElementById('password-input');
+const loginBtn = document.getElementById('login-btn');
+const loginError = document.getElementById('login-error');
+const itemsTbody = document.getElementById('items-tbody');
+const grandTotalEl = document.getElementById('grand-total');
+const savedTbody = document.getElementById('saved-tbody');
+const saveStatus = document.getElementById('save-status');
+
+function getStoredPassword() {
+  return sessionStorage.getItem('admin_password') || '';
+}
+
+function authHeaders(extra) {
+  return Object.assign({ 'X-Admin-Password': getStoredPassword() }, extra || {});
+}
+
+function money(n) {
+  return 'KES ' + n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function addItemRow(desc, qty, price) {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="text" class="desc" value="${desc || ''}" placeholder="e.g. Deep clean - 3 bedroom house"></td>
+    <td><input type="number" class="qty" min="0" step="1" value="${qty != null ? qty : 1}"></td>
+    <td><input type="number" class="price" min="0" step="0.01" value="${price != null ? price : ''}"></td>
+    <td class="subtotal-cell">KES 0.00</td>
+    <td><button type="button" class="remove-btn" title="Remove">&times;</button></td>
+  `;
+  itemsTbody.appendChild(tr);
+
+  const qtyInput = tr.querySelector('.qty');
+  const priceInput = tr.querySelector('.price');
+  const subtotalCell = tr.querySelector('.subtotal-cell');
+  const removeBtn = tr.querySelector('.remove-btn');
+
+  function recalcRow() {
+    const q = parseFloat(qtyInput.value) || 0;
+    const p = parseFloat(priceInput.value) || 0;
+    subtotalCell.textContent = money(q * p);
+    recalcGrandTotal();
+  }
+
+  qtyInput.addEventListener('input', recalcRow);
+  priceInput.addEventListener('input', recalcRow);
+  removeBtn.addEventListener('click', function () {
+    tr.remove();
+    recalcGrandTotal();
+  });
+
+  recalcRow();
+}
+
+function recalcGrandTotal() {
+  let total = 0;
+  itemsTbody.querySelectorAll('tr').forEach(function (tr) {
+    const q = parseFloat(tr.querySelector('.qty').value) || 0;
+    const p = parseFloat(tr.querySelector('.price').value) || 0;
+    total += q * p;
+  });
+  grandTotalEl.textContent = money(total);
+}
+
+document.getElementById('add-item-btn').addEventListener('click', function () {
+  addItemRow('', 1, '');
+});
+
+document.getElementById('quotation-form').addEventListener('submit', async function (e) {
+  e.preventDefault();
+
+  const items = [];
+  itemsTbody.querySelectorAll('tr').forEach(function (tr) {
+    const description = tr.querySelector('.desc').value.trim();
+    const quantity = parseFloat(tr.querySelector('.qty').value) || 0;
+    const unit_price = parseFloat(tr.querySelector('.price').value) || 0;
+    if (description) items.push({ description, quantity, unit_price });
+  });
+
+  if (items.length === 0) {
+    saveStatus.textContent = 'Add at least one line item.';
+    saveStatus.className = 'save-status err';
+    saveStatus.hidden = false;
+    return;
+  }
+
+  const payload = {
+    client_name: document.getElementById('client-name').value,
+    client_phone: document.getElementById('client-phone').value,
+    client_email: document.getElementById('client-email').value || null,
+    client_org: document.getElementById('client-org').value || null,
+    client_location: document.getElementById('client-location').value,
+    valid_until: document.getElementById('valid-until').value || null,
+    notes: document.getElementById('notes').value || null,
+    items: items,
+  };
+
+  try {
+    const res = await fetch('/api/quotations', {
+      method: 'POST',
+      headers: authHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error('Failed to save');
+    const saved = await res.json();
+
+    saveStatus.textContent = 'Saved as ' + saved.quotation_number + '.';
+    saveStatus.className = 'save-status ok';
+    saveStatus.hidden = false;
+
+    document.getElementById('quotation-form').reset();
+    itemsTbody.innerHTML = '';
+    addItemRow('', 1, '');
+    recalcGrandTotal();
+    loadSavedQuotations();
+  } catch (err) {
+    saveStatus.textContent = 'Something went wrong saving this quotation.';
+    saveStatus.className = 'save-status err';
+    saveStatus.hidden = false;
+  }
+});
+
+async function downloadPdf(id, quotationNumber) {
+  const res = await fetch('/api/quotations/' + id + '/pdf', { headers: authHeaders() });
+  if (!res.ok) return;
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = quotationNumber + '.pdf';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function loadSavedQuotations() {
+  const res = await fetch('/api/quotations', { headers: authHeaders() });
+  if (!res.ok) return;
+  const data = await res.json();
+  savedTbody.innerHTML = '';
+  data.forEach(function (q) {
+    const total = q.items.reduce(function (sum, it) { return sum + it.quantity * it.unit_price; }, 0);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${q.quotation_number}</td>
+      <td>${q.date_issued}</td>
+      <td>${q.client_name}</td>
+      <td>${money(total)}</td>
+      <td></td>
+    `;
+    const btn = document.createElement('button');
+    btn.className = 'pdf-link-btn';
+    btn.textContent = 'Download PDF';
+    btn.addEventListener('click', function () { downloadPdf(q.id, q.quotation_number); });
+    tr.lastElementChild.appendChild(btn);
+    savedTbody.appendChild(tr);
+  });
+}
+
+async function tryLogin() {
+  const res = await fetch('/api/quotations', { headers: authHeaders() });
+  if (res.status === 401) {
+    sessionStorage.removeItem('admin_password');
+    loginView.hidden = false;
+    dashboardView.hidden = true;
+    loginError.hidden = false;
+    return;
+  }
+  loginView.hidden = true;
+  dashboardView.hidden = false;
+  if (itemsTbody.children.length === 0) addItemRow('', 1, '');
+  loadSavedQuotations();
+}
+
+loginBtn.addEventListener('click', function () {
+  sessionStorage.setItem('admin_password', passwordInput.value);
+  loginError.hidden = true;
+  tryLogin();
+});
+
+passwordInput.addEventListener('keydown', function (e) {
+  if (e.key === 'Enter') loginBtn.click();
+});
+
+if (getStoredPassword()) {
+  tryLogin();
+}
+</script>
+</body>
+</html>

@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from .database import Base, engine
-from .routers import quotes
+from .routers import quotes, quotations
 
 # Create tables on startup if they don't exist yet.
 Base.metadata.create_all(bind=engine)
@@ -17,8 +17,8 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(title="CT Cleaning Service API")
 
 # Allow the frontend to call the API even if served from a different origin
-# during local development (e.g. opening index.html directly, or a separate
-# dev server). In production, both are served from this same app anyway.
+# during local development. In production, both are served from this same
+# app anyway, so this is mainly a local-dev convenience.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -27,6 +27,7 @@ app.add_middleware(
 )
 
 app.include_router(quotes.router)
+app.include_router(quotations.router)
 
 # Serve the static site (index.html, css, etc.) from the project root,
 # one directory up from backend/. This means running this one server gives

@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 <style>
-[hidden] { display: none !important; }
+  [hidden] { display: none !important; }
   .admin-wrap { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
   .login-box { max-width: 360px; margin: 80px auto; display: grid; gap: 14px; }
   .login-box input { padding: 11px 13px; border: 1px solid var(--border); border-radius: var(--radius); }
@@ -18,6 +18,9 @@
   .status-select { padding: 6px 8px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.85rem; }
   .admin-error { color: #B3261E; font-size: 0.9rem; }
   .table-wrap { overflow-x: auto; }
+  .top-nav { display: flex; gap: 18px; margin-bottom: 24px; font-size: 0.9rem; }
+  .top-nav a { color: var(--text-soft); }
+  .top-nav a.active { color: var(--teal-dark); font-weight: 600; }
 </style>
 </head>
 <body>
@@ -39,6 +42,11 @@
   </div>
 
   <div id="dashboard-view" hidden>
+    <nav class="top-nav">
+      <a href="admin.html" class="active">Leads</a>
+      <a href="quotation-new.html">Quotations</a>
+    </nav>
+
     <h1 style="font-size:1.4rem;">Quote requests</h1>
     <p style="color:var(--text-soft);">Newest first. Update status as you follow up on each lead.</p>
     <div class="table-wrap">
